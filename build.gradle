@@ -1,15 +1,20 @@
 apply plugin: 'java'
 
+
+apply plugin: 'java'
+libsDirName = "/Users/octavianfeodot/Documents/BurpExtensions/"
+version '1.0'
+
 repositories {
-    mavenCentral()
+     mavenCentral()
 }
 
+// In this section you declare the dependencies for your production and test code
 dependencies {
-    compile 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
-    //compile 'org.apache.httpcomponents:httpclient:4.5.6'
-    //compile 'org.apache.httpcomponents:httpcore:4.4.10'
-    //compile 'commons-logging:commons-logging:1.2'
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    // Add the Burp Extender interface
+    implementation group: 'net.portswigger.burp.extender', name: 'burp-extender-api', version: '2.3'
+    implementation 'org.apache.commons:commons-lang3:3.5'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.12'
 }
 
 sourceSets {
@@ -20,8 +25,25 @@ sourceSets {
     }
 }
 
-task fatJar(type: Jar) {
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+gradle.projectsEvaluated {
+	tasks.withType(JavaCompile) {
+		options.compilerArgs << "-Xlint:unchecked"
+	}
 }
+
+
+
+task fatJar(type: Jar) {
+	archiveBaseName = project.name + '-all'
+	from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
+        exclude 'META-INF/**'
+}
+
+
+compileJava {
+	targetCompatibility '1.8'
+	sourceCompatibility '1.8'
+}
+
+
